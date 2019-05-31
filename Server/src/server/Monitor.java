@@ -46,6 +46,18 @@ public class Monitor {
         
     }
     
+    public synchronized void aggiungiInLista(ThreadServer th){
+        for(ThreadServer thread : clients){
+            if(thread != th){
+                try{
+                    thread.dos.writeBoolean(true);
+                    thread.dos.writeUTF(th.nome);
+                    thread.dos.flush();
+                }catch(IOException e){}
+            }
+        }
+    }
+    
     public synchronized void delete(ThreadServer th){
         clients.remove(th);
         System.out.println("oh no un client se ne e' andata fu**k");

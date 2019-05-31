@@ -22,7 +22,7 @@ public class ThreadServer implements Callable<Void>{
             
             nome = dis.readUTF(); // leggo il nome dal client
             monitor.sendAllPartecipants(this);
-            
+            monitor.aggiungiInLista(this);
             
         }catch(IOException e){}
         
