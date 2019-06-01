@@ -5,18 +5,21 @@
  */
 package chatclient1;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.*;
 import java.util.*;
 import java.io.*;
-import javax.swing.DefaultListModel;
+import javax.swing.*;
 
-public class ChatFrame extends javax.swing.JFrame {
+public class ChatFrame extends javax.swing.JFrame implements ActionListener{
     
     static final String HOST = "localhost";
     static final int PORT = 1337;
     static DataInputStream in;
     static DataOutputStream out;
     public static DefaultListModel modelList = new DefaultListModel();
+    public static String nome = "";
     
     Socket s;
     
@@ -25,9 +28,14 @@ public class ChatFrame extends javax.swing.JFrame {
      */
     public ChatFrame() {
         initComponents();
+        jTextField1.addActionListener(this);
+    }
+    
+    public void initServer(){
         try{
             s = new Socket(HOST,PORT);
-            
+            new ClientThread(s).start();
+            out = new DataOutputStream(new BufferedOutputStream(s.getOutputStream()));
             
         }catch(Exception e){
             System.out.println("EXCEPTION -> Errore durante la connessione con il SERVER!");
@@ -125,8 +133,9 @@ public class ChatFrame extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new ChatFrame().setVisible(true);
-                
+                ChatFrame c = new ChatFrame();
+                c.setVisible(true);
+                c.initServer();
             }
         });
     }
@@ -140,6 +149,27 @@ public class ChatFrame extends javax.swing.JFrame {
     public static javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if ((e.getSource() instanceof JTextField) && ((JTextField) e.getSource() == jTextField1) &&
+        ((jTextField1.getText() != "")))
+        {            
+            try{
+                if(ChatFrame.modelList.getSize() == 0 || ChatFrame.jList1.getSelectedValue().toLowerCase().equals("tutti")){
+                    out.writeBoolean(true);
+                    out.writeUTF(jTextField1.getText());
+                    out.flush();
+                    jTextField1.setText("");
+                } else {
+                    out.writeBoolean(false);
+                    out.writeUTF(ChatFrame.jList1.getSelectedValue().toLowerCase() + "-" + jTextField1.getText());
+                    out.flush();
+                    jTextField1.setText("");
+                }
+            } catch(IOException exc){}
+        }
+    }
 }
 
 class ClientThread extends Thread{
@@ -148,12 +178,13 @@ class ClientThread extends Thread{
     DataInputStream in;
     
     public ClientThread(Socket s){
-        conn=s;
-        String str;
-        
+        conn=s;        
+    }
+    
+    public void run(){
         try{
             in=new DataInputStream(new BufferedInputStream(conn.getInputStream()));
-            
+                        
             in.readBoolean();
             initList(in.readUTF());
             
@@ -161,24 +192,40 @@ class ClientThread extends Thread{
                 if(in.readBoolean())
                     ChatFrame.jTextArea1.append(in.readUTF());
                 else {
-                    updateList(in.readUTF());
+                    updateList();
                 }
             }
         }catch(Exception e){
-            System.out.println("EXCEPTION -> Errore durante la creazione del Thread");
+            System.out.println("exception -> " + e.getMessage());
         }
-        
-        
     }
     
-    private void 
+    private void updateList(){ // controllo un altra volta se devo aggiungere o togliere
+        try{            
+            if(in.readBoolean()){
+                
+                ChatFrame.modelList.addElement(in.readUTF().trim());
+            } else {
+                String toRemove = in.readUTF();
+                for(int i=0; i<ChatFrame.modelList.getSize(); i++){
+                    if(ChatFrame.modelList.elementAt(i).equals(toRemove)){
+                        ChatFrame.modelList.removeElementAt(i);
+                    }
+                }
+            }
+        }catch(Exception e){
+            
+        }
+    }
     
     private void initList(String s){
+        System.out.println(s);
         String[] elements;
         elements=s.split("\n");
         
         for(String i : elements){
-            ChatFrame.modelList.add(MIN_PRIORITY, i);
+            ChatFrame.modelList.addElement(i);
         }
+        ChatFrame.jList1.setSelectedIndex(0);
     }
 }

@@ -1,21 +1,11 @@
-<<<<<<< HEAD
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/media/terraformer/MORONI_LUCA/Programmazione_2/ChatJava/Server/src/server/ThreadServer.java</file>
             <file>file:/media/terraformer/MORONI_LUCA/Programmazione_2/ChatJava/Server/src/server/Server.java</file>
+            <file>file:/media/terraformer/MORONI_LUCA/Programmazione_2/ChatJava/Server/src/server/ThreadServer.java</file>
             <file>file:/media/terraformer/MORONI_LUCA/Programmazione_2/ChatJava/Server/src/server/Monitor.java</file>
         </group>
     </open-files>
 </project-private>
-=======
-<?xml version="1.0" encoding="UTF-8"?>
-<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
-    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
-    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
-    </open-files>
-</project-private>
->>>>>>> 8c81e23d8cf47d95468e03fda73edc351c88f26c

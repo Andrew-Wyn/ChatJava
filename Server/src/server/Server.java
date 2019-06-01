@@ -15,6 +15,7 @@ public class Server {
             
             while(true){
                 monitor.startNew(server.accept());
+                System.out.println("accettato");
             }
         } catch(IOException e) {
             System.out.println(e.getMessage());
