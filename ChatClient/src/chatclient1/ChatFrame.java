@@ -23,9 +23,7 @@ public class ChatFrame extends javax.swing.JFrame implements ActionListener{
     
     Socket s;
     
-    /**
-     * Creates new form ChatFrame
-     */
+    
     public ChatFrame() {
         initComponents();
         jTextField1.addActionListener(this);
@@ -34,12 +32,42 @@ public class ChatFrame extends javax.swing.JFrame implements ActionListener{
     public void initServer(){
         try{
             s = new Socket(HOST,PORT);
-            new ClientThread(s).start();
+            new ClientThread(s, this).start();
             out = new DataOutputStream(new BufferedOutputStream(s.getOutputStream()));
             
         }catch(Exception e){
             System.out.println("EXCEPTION -> Errore durante la connessione con il SERVER!");
         }
+    }
+    
+    public void initList(String s){
+        System.out.println(s);
+        String[] elements;
+        elements=s.split("\n");
+        
+        for(String i : elements){
+            modelList.addElement(i);
+        }
+        jList1.setSelectedIndex(0);
+    }
+    
+    public void updateList(boolean bAdd, String name){ // controllo un altra volta se devo aggiungere o togliere
+        try{            
+            if(bAdd){
+                
+                ChatFrame.modelList.addElement(name);
+            } else {
+                for(int i=0; i<modelList.getSize(); i++){
+                    if(ChatFrame.modelList.elementAt(i).equals(name)){
+                        ChatFrame.modelList.removeElementAt(i);
+                    }
+                }
+            }
+        }catch(Exception e){}
+    }
+    
+    public void insertMessage(String msg){
+        jTextArea1.append(msg);
     }
 
     /**
@@ -66,6 +94,7 @@ public class ChatFrame extends javax.swing.JFrame implements ActionListener{
         jTextField1.setText("testo");
         jPanel1.add(jTextField1, java.awt.BorderLayout.PAGE_END);
 
+        jTextArea1.setEditable(false);
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
         jScrollPane1.setViewportView(jTextArea1);
@@ -93,7 +122,7 @@ public class ChatFrame extends javax.swing.JFrame implements ActionListener{
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -146,15 +175,13 @@ public class ChatFrame extends javax.swing.JFrame implements ActionListener{
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    public static javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if ((e.getSource() instanceof JTextField) && ((JTextField) e.getSource() == jTextField1) &&
-        ((jTextField1.getText() != "")))
-        {            
+        if ((!(jTextField1.getText().equals(""))) && (e.getSource() instanceof JTextField) && ((JTextField) e.getSource() == jTextField1)) {            
             try{
                 if(ChatFrame.modelList.getSize() == 0 || ChatFrame.jList1.getSelectedValue().toLowerCase().equals("tutti")){
                     out.writeBoolean(true);
@@ -174,58 +201,32 @@ public class ChatFrame extends javax.swing.JFrame implements ActionListener{
 
 class ClientThread extends Thread{
     Socket conn;
-    
+    ChatFrame chatFrame;
+   
     DataInputStream in;
     
-    public ClientThread(Socket s){
+    public ClientThread(Socket s, ChatFrame chatFrame){
         conn=s;        
+        this.chatFrame = chatFrame;
     }
     
+    @Override
     public void run(){
         try{
             in=new DataInputStream(new BufferedInputStream(conn.getInputStream()));
                         
             in.readBoolean();
-            initList(in.readUTF());
+            chatFrame.initList(in.readUTF());
             
             while(true){
                 if(in.readBoolean())
-                    ChatFrame.jTextArea1.append(in.readUTF());
+                    chatFrame.insertMessage(in.readUTF()); // change with reference to the object passed
                 else {
-                    updateList();
+                    chatFrame.updateList(in.readBoolean(), in.readUTF().trim());
                 }
             }
-        }catch(Exception e){
+        }catch(IOException e){
             System.out.println("exception -> " + e.getMessage());
         }
-    }
-    
-    private void updateList(){ // controllo un altra volta se devo aggiungere o togliere
-        try{            
-            if(in.readBoolean()){
-                
-                ChatFrame.modelList.addElement(in.readUTF().trim());
-            } else {
-                String toRemove = in.readUTF();
-                for(int i=0; i<ChatFrame.modelList.getSize(); i++){
-                    if(ChatFrame.modelList.elementAt(i).equals(toRemove)){
-                        ChatFrame.modelList.removeElementAt(i);
-                    }
-                }
-            }
-        }catch(Exception e){
-            
-        }
-    }
-    
-    private void initList(String s){
-        System.out.println(s);
-        String[] elements;
-        elements=s.split("\n");
-        
-        for(String i : elements){
-            ChatFrame.modelList.addElement(i);
-        }
-        ChatFrame.jList1.setSelectedIndex(0);
     }
 }
