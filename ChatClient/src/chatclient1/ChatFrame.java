@@ -10,16 +10,22 @@ import java.awt.event.ActionListener;
 import java.net.*;
 import java.util.*;
 import java.io.*;
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import javax.swing.*;
 
 public class ChatFrame extends javax.swing.JFrame implements ActionListener{
-    
+    private static final String key = "aesEncryptionKey";
+    private static final String initVector = "encryptionIntVec";
     static final String HOST = "localhost";
     static final int PORT = 1337;
     static DataInputStream in;
     static DataOutputStream out;
     public static DefaultListModel modelList = new DefaultListModel();
     public static String nome = "";
+    
+    private boolean inserireNome = true;
     
     Socket s;
     
@@ -67,7 +73,15 @@ public class ChatFrame extends javax.swing.JFrame implements ActionListener{
     }
     
     public void insertMessage(String msg){
-        jTextArea1.append(msg);
+        String [] in = msg.split(" > ");
+        String mitt = in[0].trim() + " > ";
+        String msgIn = "";
+
+        for(int i=1; i<in.length; i++){
+            msgIn += in[i].trim();
+        }
+                
+        jTextArea1.append(mitt + decrypt(msgIn) + "\n");
     }
 
     /**
@@ -181,25 +195,74 @@ public class ChatFrame extends javax.swing.JFrame implements ActionListener{
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if ((!(jTextField1.getText().equals(""))) && (e.getSource() instanceof JTextField) && ((JTextField) e.getSource() == jTextField1)) {            
+        if ((!(jTextField1.getText().equals(""))) && (e.getSource() instanceof JTextField) && ((JTextField) e.getSource() == jTextField1)) {   
+            
+            String outputCrypted;
+            
+            if(inserireNome){
+                outputCrypted = jTextField1.getText();
+                inserireNome = false;
+            } else {
+                System.out.println("mamma mia");
+                outputCrypted = encrypt(jTextField1.getText());
+                System.out.println(outputCrypted);
+            }
+            
             try{
                 if(ChatFrame.modelList.getSize() == 0 || ChatFrame.jList1.getSelectedValue().toLowerCase().equals("tutti")){
                     out.writeBoolean(true);
-                    out.writeUTF(jTextField1.getText());
+                    out.writeUTF(outputCrypted);
                     out.flush();
                     jTextField1.setText("");
                 } else {
                     out.writeBoolean(false);
-                    out.writeUTF(ChatFrame.jList1.getSelectedValue().toLowerCase() + "-" + jTextField1.getText());
+                    out.writeUTF(ChatFrame.jList1.getSelectedValue().toLowerCase() + "-" + outputCrypted);
                     out.flush();
                     jTextField1.setText("");
                 }
             } catch(IOException exc){}
         }
     }
+    
+    
+    public String encrypt(String value) {
+        try {
+            IvParameterSpec iv = new IvParameterSpec(initVector.getBytes("UTF-8"));
+            SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
+
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+            cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
+
+            byte[] encrypted = cipher.doFinal(value.getBytes());
+            return Base64.getEncoder().encodeToString(encrypted);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+    
+    public String decrypt(String encrypted) {
+    try {
+        IvParameterSpec iv = new IvParameterSpec(initVector.getBytes("UTF-8"));
+        SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
+ 
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+        cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
+
+        byte[] original = cipher.doFinal(Base64.getDecoder().decode(encrypted));
+ 
+        return new String(original);
+    } catch (Exception ex) {
+        ex.printStackTrace();
+    }
+ 
+    return null;
+}
+    
 }
 
 class ClientThread extends Thread{
+    
     Socket conn;
     ChatFrame chatFrame;
    
@@ -220,7 +283,7 @@ class ClientThread extends Thread{
             
             while(true){
                 if(in.readBoolean())
-                    chatFrame.insertMessage(in.readUTF()); // change with reference to the object passed
+                    chatFrame.insertMessage((in.readUTF())); // change with reference to the object passed
                 else {
                     chatFrame.updateList(in.readBoolean(), in.readUTF().trim());
                 }

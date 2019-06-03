@@ -6,6 +6,7 @@ import java.io.*;
 import java.util.concurrent.*;
 
 public class ThreadServer implements Callable<Void>{
+    
     public Socket client;
     private Monitor monitor;
     DataInputStream dis;
@@ -37,7 +38,13 @@ public class ThreadServer implements Callable<Void>{
                 } else {
                     String [] in = dis.readUTF().split("-");
                     String dest = in[0].trim();
-                    monitor.ptp(dest, in[1].trim(), nome);
+                    String msgOut = "";
+                    
+                    for(int i=1; i<in.length; i++){
+                        msgOut += in[i].trim();
+                    }
+                    
+                    monitor.ptp(dest, msgOut, nome);
                 }
                 
             }

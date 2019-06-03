@@ -78,10 +78,10 @@ public class Monitor {
     public synchronized void broadCast(ThreadServer th, String msg){
         for(ThreadServer thread : clients){
             if(thread != th){
-                
+                System.out.println(msg);
                 try{
                     thread.dos.writeBoolean(true);
-                    thread.dos.writeUTF(th.nome + ">" + msg + "\n");
+                    thread.dos.writeUTF(th.nome + " > " + msg);
                     thread.dos.flush();
                 }catch(IOException e){
                 System.out.println(e.getMessage());
@@ -95,7 +95,7 @@ public class Monitor {
             if(thread.nome.equals(dest)){
                 try{
                     thread.dos.writeBoolean(true);
-                    thread.dos.writeUTF(nome + " [pvt]> " + msg + "\n");
+                    thread.dos.writeUTF(nome + " [pvt] > " + msg);
                     thread.dos.flush();
                 }catch(IOException e){}
                 return;
