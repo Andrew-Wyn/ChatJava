@@ -8,7 +8,8 @@ import java.util.concurrent.*;
 public class ThreadServer implements Callable<Void>{
     
     public Socket client;
-    private Monitor monitor;
+    private final Monitor monitor;
+    // sarebbe semanticamente corretto spostare i flussi nel try-with-resources per farli chiudere automaticamente 
     DataInputStream dis;
     DataOutputStream dos;
     public String nome;
