@@ -2,5 +2,5 @@
 chat
 
 Improve:
- - form per inserimento invector e seckret key da dare in pancia all aes
+ - capire perche' se entro in excep su crypto mi si bloccano gli stream
  - risolvere problema grafico della modelList
