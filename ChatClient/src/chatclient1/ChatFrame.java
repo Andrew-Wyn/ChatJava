@@ -29,6 +29,7 @@ public class ChatFrame extends javax.swing.JFrame implements ActionListener{
     public ChatFrame() {
         initComponents();
         jTextField1.addActionListener(this);
+        jTextField1.setEditable(false);
         jTextArea1.setText("Connessione ...");
     }
     
@@ -196,6 +197,9 @@ public class ChatFrame extends javax.swing.JFrame implements ActionListener{
         initVector = txtIV.getText();
         while(initVector.length() < 16)
             initVector += " ";
+        
+        if(!key.equals("                ") && !initVector.equals("                "))
+            jTextField1.setEditable(true);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
