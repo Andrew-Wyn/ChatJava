@@ -28,8 +28,7 @@ public class ThreadServer implements Callable<Void>{
             
             dis.readBoolean();
             nome = dis.readUTF(); // leggo il nome dal client
-            System.out.println(nome);
-            monitor.addInPool(this);
+            //monitor.addInPool(this);
             monitor.aggiungiInLista(this);
             monitor.sendAllPartecipants(this);
             

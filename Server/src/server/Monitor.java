@@ -22,14 +22,14 @@ public class Monitor {
     }
     
     public void startNew(Socket client){
-        executor.submit((new ThreadServer(client, this))); // submit(run) accetta oggetti di interfaccia callable
+        executor.submit(addInPool(new ThreadServer(client, this))); // submit(run) accetta oggetti di interfaccia callable
     }
     
     public void stop(){
         executor.shutdown();
     }
     
-    public void sendAllPartecipants(ThreadServer th){
+    public synchronized void sendAllPartecipants(ThreadServer th){
         String out = "tutti\n";
         for(ThreadServer thread : clients){
             if(thread != th){
